@@ -133,7 +133,7 @@ export function RoomPage({ roomId }: RoomPageProps) {
   return (
     <Box h="100vh" w="100%" bg="gray.50">
       <Header room={{ ...room, participants }} />
-      <Box w="100%" h="calc(100vh - 3.5rem)" position="relative">
+      <Box w="100%" h="calc(100vh - var(--chakra-sizes-14))" position="relative">
         <World />
         <VStack zIndex="2" position="absolute" top="4" right="4" spacing={4}>
           {participants.map(p => <ParticipantVideo key={p.userId} isUser={p.userId === user.id} participant={p} /> )}

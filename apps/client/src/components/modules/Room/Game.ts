@@ -173,6 +173,11 @@ export class Game {
 
       this.socket.emit('update-movement', { userId: user.userId, movement: user.movement });
     });
+    document.body.addEventListener('wheel', (e) => {
+      const zoomIn = e.deltaY < 0;
+
+      this.camera.zoom(zoomIn ? 'IN' : 'OUT')
+    });
   }
 
   public update({ participants }: { participants: GameParticipant[] }) {
@@ -231,12 +236,23 @@ class Camera {
 
   public camera = new THREE.PerspectiveCamera(75, 16 / 9, 1, 10000);
 
-  public offsetDistance: number = 10;
+  public offsetDistance: number = 5;
 
-  public offset: Position = { x: 0, y: 20, z: -25 }
+  public offset: Position = { x: 0, y: 1, z: -1 }
+
+  public offsets: Record<number, Position> = {
+    1: { x: 0, y: 1, z: -1 },
+    2: { x: 0, y: 5, z: -5 },
+    3: { x: 0, y: 10, z: -10 },
+    4: { x: 0, y: 15, z: -15 },
+    5: { x: 0, y: 20, z: -20 },
+    6: { x: 0, y: 25, z: -25 },
+    7: { x: 0, y: 30, z: -30 },
+  }
 
   constructor(private game: Game) {
-    this.camera.position.set(this.offset.x, this.offset.y, this.offset.z);
+    const offset = this.offsets[this.offsetDistance];
+    this.camera.position.set(offset.x, offset.y, offset.z);
     this.camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     game.scene.add(this.camera);
@@ -268,7 +284,21 @@ class Camera {
     this.camera.rotation.z = rotation;
   }
 
-  public updateOffset(distance: number) {
+  public zoom(to: 'IN' | 'OUT') {
+    if (to === 'IN' && this.offsetDistance - 1 < 1) return;
+    if (to === 'OUT' && this.offsetDistance + 1 > 7) return;
+    
+    const direction = to === 'IN' ? -1 : 1;
+    const newDistance = this.offsetDistance + direction;
+    
+    if (this.offsetDistance === newDistance) return;
 
+    const newOffset = this.offsets[newDistance];
+
+    this.offsetDistance = newDistance;
+    this.offset.y = newOffset.y;
+    this.offset.z = newOffset.z;
+
+    this.camera.position.set(this.offset.x, this.offset.y, this.offset.z);
   }
 }
